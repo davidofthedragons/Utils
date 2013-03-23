@@ -19,6 +19,7 @@ public class MathParser {
 			expression = JOptionPane.showInputDialog(null, "Enter an expression");
 		}
 		expression=expression.trim();
+		expression=expression.replaceAll(" ", "");
 		System.out.println(expression);
 		
 		try {
@@ -31,7 +32,19 @@ public class MathParser {
 	}
 	
 	public String parse(String exp) throws MathSyntaxException {
-		
+		System.out.println("Entering parse()");
+		System.out.println("Checking for parenthesis");
+		for(int i=0; i<exp.length(); i++) {
+			if(exp.charAt(i)=='(') {
+				int startP = i;
+				System.out.println("Found open parenthesis at " + startP);
+				int endP = findParPair(exp.substring(startP));
+				System.out.println("Found corresponding close parenthesis at " + endP);
+				String s = parse(exp.substring(startP+1, endP));
+				exp = exp.replace(exp.substring(startP, endP+1), s);
+			}
+		}
+		System.out.println(exp);
 		//int index = 0;
 		StringTokenizer tokenizer = new StringTokenizer(exp, deliminatiors, true);
 		ArrayList<String> tokens = new ArrayList<String>();
@@ -40,26 +53,12 @@ public class MathParser {
 			if(hold!="" && hold!=" " && hold!="\n" && hold!="\t")
 				tokens.add(hold);
 		}
-		
-		//First pass:
-		for(int i=0; i<tokens.size(); i++) {
-			if(tokens.get(i).equals("(")) {
-				int curPar = i;
-				int nextCl = nextOccurenceOf(')', tokens, i);
-				int nextOp = nextOccurenceOf('(',tokens, i+1);
-				if(nextCl==-1) throw new MathSyntaxException();
-				while(nextOp<nextCl && nextOp!=-1) {
-					nextOp = nextIndexOf(exp, '(', nextOp+1);
-					//nextCl = nextIndexOf(exp, ')', nextCl+1);
-				}
-				
-				
-			}
-		}
-		
+		System.out.println("Finished Tokenizing");
 		for(int i=0; i<tokens.size(); i++) {
 			String token = tokens.get(i);
 			//System.out.println(token);
+			
+			
 			
 			if(token.equals("+")) {
 				if(i==0) throw new MathSyntaxException();
@@ -128,35 +127,33 @@ public class MathParser {
 			}
 		}
 		
-		
-		/*int pStart=0, pEnd=0;
-		for(int i=0; i<exp.length();i++) {
-			//parse parenthesis
-			if(exp.charAt(i)=='(') {
-				pStart=i+1;
-			}
-			else if(exp.charAt(i)==')') {
-				pEnd=i-1;
-				String toReplace=exp.substring(pStart-1, pEnd+1);
-				String sec=parse(exp.substring(pStart, pEnd));
-				exp.replaceFirst(toReplace, sec);
-			}
-			//parse exponents
-			if(exp.charAt(i)=='^') {
-				
-			}
-		}*/
+		System.out.println("Exiting parse();");
 		String assembly = "";
 		for(int i=0; i<tokens.size(); i++) assembly = assembly + tokens.get(i);
 		return assembly;
 	}
 	
-	
-	public String parseParenthesis(String exp) {
+	private int locInString(ArrayList<String> tokens, int i) {
+		int length=0;
+		for(int j=0; j<i; j++) length+=tokens.get(j).length();
+		return length;
+	}
+	private int findParPair(String s) throws MathSyntaxException {  //CAN"T RETURN i!!!!!! 
+		System.out.println("findParPair(" + s + ")");
+		//int sp; //start paren
+		for(int i=0; i<s.length(); i++) {
+			if(s.charAt(i) == '(') {
+				i = findParPair(s.substring(i+1));
+				if(i==-1) throw new MathSyntaxException();
+				//continue;
+			}
+			else if(s.charAt(i) == ')') {
+				return i;
+			}
+			//System.out.println(i);
+		}
 		
-		
-		
-		return exp;
+		return -1;
 	}
 	
 	
