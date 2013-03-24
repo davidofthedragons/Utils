@@ -27,20 +27,36 @@ public class MathParser {
 		} catch (MathSyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			System.out.println(e.getStackTrace());
+		} catch (StringIndexOutOfBoundsException e) {
+			System.out.println("Fail");
+			e.printStackTrace();
 		}
 		System.out.println(expression);
 	}
 	
-	public String parse(String exp) throws MathSyntaxException {
+	public String parse(String exp) throws MathSyntaxException, NumberFormatException, StringIndexOutOfBoundsException {
 		System.out.println("Entering parse()");
-		System.out.println("Checking for parenthesis");
+		//System.out.println("Checking for parenthesis");
 		for(int i=0; i<exp.length(); i++) {
 			if(exp.charAt(i)=='(') {
 				int startP = i;
-				System.out.println("Found open parenthesis at " + startP);
-				int endP = findParPair(exp.substring(startP));
-				System.out.println("Found corresponding close parenthesis at " + endP);
+				//System.out.println("Found open parenthesis at " + startP);
+				int endP = findParPair(exp.substring(startP)) + i;
+				if(endP<=-1 || startP<=-1) System.out.println("Fail!");
+				System.out.println(startP + ", " + endP);
+				//System.out.println("Found corresponding close parenthesis at " + endP);
 				String s = parse(exp.substring(startP+1, endP));
+				if (i>0) {
+					if (!operators.contains(Character.toString(exp
+							.charAt(i - 1)))) { //  5(8) --> 5*(8)
+						exp = exp.substring(0, startP) + "*"
+								+ exp.substring(startP);
+						startP++;
+						endP++;
+					}
+				}
 				exp = exp.replace(exp.substring(startP, endP+1), s);
 			}
 		}
@@ -54,28 +70,12 @@ public class MathParser {
 				tokens.add(hold);
 		}
 		System.out.println("Finished Tokenizing");
+		
 		for(int i=0; i<tokens.size(); i++) {
 			String token = tokens.get(i);
-			//System.out.println(token);
-			
-			
-			
-			if(token.equals("+")) {
+			if(token.equals("^")) {
 				if(i==0) throw new MathSyntaxException();
-				double v1 = Double.parseDouble(tokens.get(i-1)) + Double.parseDouble(tokens.get(i+1));
-				//System.out.println(v1);
-				int length=0;
-				for(int j=0; j<i; j++) length+=tokens.get(j).length();
-				tokens.remove(i);
-				tokens.remove(i);
-				tokens.remove(i-1);
-				tokens.add(i-1, Double.toString(v1));
-				i-=1;
-				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
-			}
-			if(token.equals("-")) {
-				if(i==0) {tokens.add(0, "0"); i++;}
-				double v1 = Double.parseDouble(tokens.get(i-1)) - Double.parseDouble(tokens.get(i+1));
+				double v1 = Math.pow(Double.parseDouble(tokens.get(i-1)), Double.parseDouble(tokens.get(i+1)));
 				System.out.println(v1);
 				int length=0;
 				for(int j=0; j<i; j++) length+=tokens.get(j).length();
@@ -86,6 +86,9 @@ public class MathParser {
 				i-=1;
 				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
+		}
+		for(int i=0; i<tokens.size(); i++) {
+			String token = tokens.get(i);
 			if(token.equals("*")) {
 				if(i==0) throw new MathSyntaxException();
 				double v1 = Double.parseDouble(tokens.get(i-1)) * Double.parseDouble(tokens.get(i+1));
@@ -99,6 +102,7 @@ public class MathParser {
 				i-=1;
 				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
+			
 			if(token.equals("/")) {
 				if(i==0) throw new MathSyntaxException();
 				double v1 = Double.parseDouble(tokens.get(i-1)) / Double.parseDouble(tokens.get(i+1));
@@ -112,9 +116,27 @@ public class MathParser {
 				i-=1;
 				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
-			if(token.equals("^")) {
+		}
+		for(int i=0; i<tokens.size(); i++) {
+			String token = tokens.get(i);
+			//System.out.println(token);
+			if(token.equals("+")) {
 				if(i==0) throw new MathSyntaxException();
-				double v1 = Math.pow(Double.parseDouble(tokens.get(i-1)), Double.parseDouble(tokens.get(i+1)));
+				double v1 = Double.parseDouble(tokens.get(i-1)) + Double.parseDouble(tokens.get(i+1));
+				//System.out.println(v1);
+				int length=0;
+				for(int j=0; j<i; j++) length+=tokens.get(j).length();
+				tokens.remove(i);
+				tokens.remove(i);
+				tokens.remove(i-1);
+				tokens.add(i-1, Double.toString(v1));
+				i-=1;
+				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
+			}
+			
+			if(token.equals("-")) {
+				if(i==0) {tokens.add(0, "0"); i++;}
+				double v1 = Double.parseDouble(tokens.get(i-1)) - Double.parseDouble(tokens.get(i+1));
 				System.out.println(v1);
 				int length=0;
 				for(int j=0; j<i; j++) length+=tokens.get(j).length();
@@ -138,9 +160,9 @@ public class MathParser {
 		for(int j=0; j<i; j++) length+=tokens.get(j).length();
 		return length;
 	}
-	private int findParPair(String s) throws MathSyntaxException {  //CAN"T RETURN i!!!!!! 
+	private int findParPair(String s) {  //CAN"T RETURN i!!!!!! 
 		System.out.println("findParPair(" + s + ")");
-		//int sp; //start paren
+/*		//int sp; //start paren
 		for(int i=0; i<s.length(); i++) {
 			if(s.charAt(i) == '(') {
 				i = findParPair(s.substring(i+1));
@@ -153,6 +175,19 @@ public class MathParser {
 			//System.out.println(i);
 		}
 		
+		return -1;
+		*/
+		int pPairs = -1;
+		for(int i=0; i<s.length(); i++) {
+			if(s.charAt(i)=='(') {
+				if(pPairs<=-1) pPairs = 1;
+				else pPairs++;
+			}
+			else if(s.charAt(i)==')') {
+				pPairs--;
+				if(pPairs==0) return i;
+			}
+		}
 		return -1;
 	}
 	
