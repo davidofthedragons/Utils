@@ -49,10 +49,8 @@ public class MathParser {
 				//System.out.println("Found corresponding close parenthesis at " + endP);
 				String s = parse(exp.substring(startP+1, endP));
 				if (i>0) {
-					if (!operators.contains(Character.toString(exp
-							.charAt(i - 1)))) { //  5(8) --> 5*(8)
-						exp = exp.substring(0, startP) + "*"
-								+ exp.substring(startP);
+					if (!operators.contains(Character.toString(exp.charAt(i - 1)))) { //  5(8) --> 5*(8)
+						exp = exp.substring(0, startP) + "*" + exp.substring(startP);
 						startP++;
 						endP++;
 					}
