@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 
 public class MathParser {
 
-	static final String deliminatiors = "+-/*^()[]|";
+	static final String deliminatiors = "+-/*^()[]| ";
 	static final String operators = "+-*/^";
 	//StringTokenizer tokenizer;
 	
@@ -15,12 +15,11 @@ public class MathParser {
 	String expression;
 	
 	public MathParser() {
-		while(expression==null) {
-			expression = JOptionPane.showInputDialog(null, "Enter an expression");
-		}
+		expression = JOptionPane.showInputDialog(null, "Enter an expression");
+		if(expression=="" || expression == null) return;
 		expression=expression.trim();
 		expression=expression.replaceAll(" ", "");
-		System.out.println(expression);
+		//System.out.println(expression);
 		
 		try {
 			expression = parse(expression);
@@ -28,7 +27,7 @@ public class MathParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NumberFormatException e) {
-			System.out.println(e.getStackTrace());
+			e.printStackTrace();
 		} catch (StringIndexOutOfBoundsException e) {
 			System.out.println("Fail");
 			e.printStackTrace();
@@ -36,8 +35,8 @@ public class MathParser {
 		System.out.println(expression);
 	}
 	
-	public String parse(String exp) throws MathSyntaxException, NumberFormatException, StringIndexOutOfBoundsException {
-		System.out.println("Entering parse()");
+	public static String parse(String exp) throws MathSyntaxException, NumberFormatException, StringIndexOutOfBoundsException {
+		//System.out.println("Entering parse()");
 		//System.out.println("Checking for parenthesis");
 		for(int i=0; i<exp.length(); i++) {
 			if(exp.charAt(i)=='(') {
@@ -45,7 +44,7 @@ public class MathParser {
 				//System.out.println("Found open parenthesis at " + startP);
 				int endP = findParPair(exp.substring(startP)) + i;
 				if(endP<=-1 || startP<=-1) System.out.println("Fail!");
-				System.out.println(startP + ", " + endP);
+				//System.out.println(startP + ", " + endP);
 				//System.out.println("Found corresponding close parenthesis at " + endP);
 				String s = parse(exp.substring(startP+1, endP));
 				if (i>0) {
@@ -58,7 +57,7 @@ public class MathParser {
 				exp = exp.replace(exp.substring(startP, endP+1), s);
 			}
 		}
-		System.out.println(exp);
+		//System.out.println(exp);
 		//int index = 0;
 		StringTokenizer tokenizer = new StringTokenizer(exp, deliminatiors, true);
 		ArrayList<String> tokens = new ArrayList<String>();
@@ -67,60 +66,93 @@ public class MathParser {
 			if(hold!="" && hold!=" " && hold!="\n" && hold!="\t")
 				tokens.add(hold);
 		}
-		System.out.println("Finished Tokenizing");
+		//System.out.println("Finished Tokenizing");
 		
 		for(int i=0; i<tokens.size(); i++) {
 			String token = tokens.get(i);
 			if(token.equals("^")) {
 				if(i==0) throw new MathSyntaxException();
-				double v1 = Math.pow(Double.parseDouble(tokens.get(i-1)), Double.parseDouble(tokens.get(i+1)));
-				System.out.println(v1);
-				int length=0;
-				for(int j=0; j<i; j++) length+=tokens.get(j).length();
-				tokens.remove(i);
-				tokens.remove(i);
+				double o1 = (Double.parseDouble(tokens.get(i-1)));
+				if(i>1 && tokens.get(i-2).equals("-")) {
+					o1 *= -1;
+					tokens.remove(i-2);
+					i--;
+				}
+				double o2 = (tokens.get(i+1).equals("-"))? (-1*Double.parseDouble(tokens.get(i+2))) : (Double.parseDouble(tokens.get(i+1)));
+				//System.out.println(o1 + "^" + o2);
+				double v1 = Math.pow(o1, o2);
+				//System.out.println(v1);
+				tokens.add(i, Double.toString(v1));
+				tokens.remove(i+1);
+				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
+				tokens.remove(i+1);
 				tokens.remove(i-1);
-				tokens.add(i-1, Double.toString(v1));
-				i-=1;
-				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
 		}
 		for(int i=0; i<tokens.size(); i++) {
 			String token = tokens.get(i);
 			if(token.equals("*")) {
 				if(i==0) throw new MathSyntaxException();
-				double v1 = Double.parseDouble(tokens.get(i-1)) * Double.parseDouble(tokens.get(i+1));
-				System.out.println(v1);
-				int length=0;
-				for(int j=0; j<i; j++) length+=tokens.get(j).length();
-				tokens.remove(i);
-				tokens.remove(i);
+				double o1 = (Double.parseDouble(tokens.get(i-1)));
+				if(i>1 && tokens.get(i-2).equals("-")) {
+					o1 *= -1;
+					tokens.remove(i-2);
+					i--;
+				}
+				double o2 = (tokens.get(i+1).equals("-"))? (-1*Double.parseDouble(tokens.get(i+2))) : (Double.parseDouble(tokens.get(i+1)));
+				//System.out.println(o1 + "^" + o2);
+				double v1 = o1*o2;
+				//System.out.println(v1);
+				tokens.add(i, Double.toString(v1));
+				tokens.remove(i+1);
+				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
+				tokens.remove(i+1);
 				tokens.remove(i-1);
-				tokens.add(i-1, Double.toString(v1));
-				i-=1;
-				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
 			
 			if(token.equals("/")) {
 				if(i==0) throw new MathSyntaxException();
-				double v1 = Double.parseDouble(tokens.get(i-1)) / Double.parseDouble(tokens.get(i+1));
-				System.out.println(v1);
-				int length=0;
-				for(int j=0; j<i; j++) length+=tokens.get(j).length();
-				tokens.remove(i);
-				tokens.remove(i);
+				double o1 = (Double.parseDouble(tokens.get(i-1)));
+				if(i>1 && tokens.get(i-2).equals("-")) {
+					o1 *= -1;
+					tokens.remove(i-2);
+					i--;
+				}
+				double o2 = (tokens.get(i+1).equals("-"))? (-1*Double.parseDouble(tokens.get(i+2))) : (Double.parseDouble(tokens.get(i+1)));
+				//System.out.println(o1 + "^" + o2);
+				double v1 = o1/o2;
+				//System.out.println(v1);
+				tokens.add(i, Double.toString(v1));
+				tokens.remove(i+1);
+				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
+				tokens.remove(i+1);
 				tokens.remove(i-1);
-				tokens.add(i-1, Double.toString(v1));
-				i-=1;
-				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
 		}
 		for(int i=0; i<tokens.size(); i++) {
 			String token = tokens.get(i);
-			//System.out.println(token);
 			if(token.equals("+")) {
 				if(i==0) throw new MathSyntaxException();
-				double v1 = Double.parseDouble(tokens.get(i-1)) + Double.parseDouble(tokens.get(i+1));
+				double o1 = (Double.parseDouble(tokens.get(i-1)));
+				if(i>1 && tokens.get(i-2).equals("-")) {
+					o1 *= -1;
+					tokens.remove(i-2);
+					i--;
+				}
+				double o2 = (tokens.get(i+1).equals("-"))? (-1*Double.parseDouble(tokens.get(i+2))) : (Double.parseDouble(tokens.get(i+1)));
+				//System.out.println(o1 + "^" + o2);
+				double v1 = o1+o2;
+				//System.out.println(v1);
+				tokens.add(i, Double.toString(v1));
+				tokens.remove(i+1);
+				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
+				tokens.remove(i+1);
+				tokens.remove(i-1);
+			}
+			
+			if(token.equals("-")) {
+				if(i==0 || deliminatiors.contains(tokens.get(i-1))) {tokens.add((i==0)? 0 : i-1, "0"); i++;}
+				double v1 = Double.parseDouble(tokens.get(i-1)) - Double.parseDouble(tokens.get(i+1));
 				//System.out.println(v1);
 				int length=0;
 				for(int j=0; j<i; j++) length+=tokens.get(j).length();
@@ -131,23 +163,9 @@ public class MathParser {
 				i-=1;
 				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
 			}
-			
-			if(token.equals("-")) {
-				if(i==0) {tokens.add(0, "0"); i++;}
-				double v1 = Double.parseDouble(tokens.get(i-1)) - Double.parseDouble(tokens.get(i+1));
-				System.out.println(v1);
-				int length=0;
-				for(int j=0; j<i; j++) length+=tokens.get(j).length();
-				tokens.remove(i);
-				tokens.remove(i);
-				tokens.remove(i-1);
-				tokens.add(i-1, Double.toString(v1));
-				i-=1;
-				//exp.replaceAll(tokens.get(i-1) + tokens.get(i) + tokens.get(i+1), Double.toString(v1));
-			}
 		}
 		
-		System.out.println("Exiting parse();");
+		//System.out.println("Exiting parse();");
 		String assembly = "";
 		for(int i=0; i<tokens.size(); i++) assembly = assembly + tokens.get(i);
 		return assembly;
@@ -158,8 +176,8 @@ public class MathParser {
 		for(int j=0; j<i; j++) length+=tokens.get(j).length();
 		return length;
 	}
-	private int findParPair(String s) {  //CAN"T RETURN i!!!!!! 
-		System.out.println("findParPair(" + s + ")");
+	private static int findParPair(String s) {  //CAN"T RETURN i!!!!!! 
+		//System.out.println("findParPair(" + s + ")");
 /*		//int sp; //start paren
 		for(int i=0; i<s.length(); i++) {
 			if(s.charAt(i) == '(') {
@@ -220,11 +238,18 @@ public class MathParser {
 		return index;
 	}
 	
+	public static void printTokens(ArrayList<String> list) {
+		for(int i=0; i<list.size(); i++) {
+			System.out.print(list.get(i));
+		}
+		System.out.println();
+	}
+	
 	public static void main(String args[]) {
 		new MathParser();
 	}
 	
-	private class MathSyntaxException extends Exception {
+	public static class MathSyntaxException extends Exception {
 		public MathSyntaxException() {
 			super("Invalid Syntax; cannot evaluate expression");
 		}
