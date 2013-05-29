@@ -97,7 +97,7 @@ public class MathParser {
 				if(i>1 && tokens.get(i-2).equals("-")) {
 					o1 *= -1;
 					tokens.remove(i-2);
-					i--;
+					i-=1;
 				}
 				double o2 = (tokens.get(i+1).equals("-"))? (-1*Double.parseDouble(tokens.get(i+2))) : (Double.parseDouble(tokens.get(i+1)));
 				//System.out.println(o1 + "^" + o2);
@@ -108,6 +108,7 @@ public class MathParser {
 				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
 				tokens.remove(i+1);
 				tokens.remove(i-1);
+				i--;
 			}
 			
 			if(token.equals("/")) {
@@ -127,6 +128,7 @@ public class MathParser {
 				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
 				tokens.remove(i+1);
 				tokens.remove(i-1);
+				i--;
 			}
 		}
 		for(int i=0; i<tokens.size(); i++) {
@@ -148,6 +150,7 @@ public class MathParser {
 				if(tokens.get(i+1).equals("-")) tokens.remove(i+1);
 				tokens.remove(i+1);
 				tokens.remove(i-1);
+				i--;
 			}
 			
 			if(token.equals("-")) {
@@ -168,6 +171,7 @@ public class MathParser {
 		//System.out.println("Exiting parse();");
 		String assembly = "";
 		for(int i=0; i<tokens.size(); i++) assembly = assembly + tokens.get(i);
+		System.out.println(assembly);
 		return assembly;
 	}
 	

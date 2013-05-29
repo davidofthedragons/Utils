@@ -1,67 +1,96 @@
 package graphing;
 
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import parser.MathParser;
 import parser.MathParser.MathSyntaxException;
 
 public class Grapher extends JPanel {
 	
-	private DataSet data;
+	//private DataSet data;
 	private String function;
+	private int f = 20;
+	private ArrayList<String> functions = new ArrayList<String>();
 	private int sx = 800, sy = 800;
 	private double xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0;
 	private double delta = .1;
 	
 	
-	public Grapher(DataSet data) {
-		this.data=data;
-	}
 	public Grapher(String function) {
 		this.function = function;
+		this.addMouseMotionListener(new MouseMotionListener() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				
+			}
+			@Override
+			public void mouseMoved(MouseEvent e) {}
+			
+		});
+		this.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				
+			}
+		});
 	}
 	
 	public void setFunction(String f) {function = f; this.repaint();}
 	public String getFunction() {return function;}
+	public void clearFunctions() {functions.clear();}
+	public void addFunction(String f) {functions.add(f);}
+	
 	
 	public void paint(Graphics g) {
 		super.paint(g);
+		g.setColor(Color.black);
 		g.drawLine(0, sy - (int) map(ymin, ymax, 0, sy, 0), sx, sy - (int) map(ymin, ymax, 0, sy, 0));
 		g.drawLine((int) map(xmin, xmax, 0, sx, 0), 0, (int) map(xmin, xmax, 0, sx, 0), sy);
-		double j = 0.0;
-		Point prevPoint = null;
-		for(double i=xmin; i<xmax; i+=delta) {
-			try {
-				j = Double.parseDouble(MathParser.parse(function.replace("x", Double.toString(i))));
-			} catch (NumberFormatException e) {
-				System.out.println("NumberFormatException waz here");
-				//e.printStackTrace();
-				prevPoint = null;
-			} catch (StringIndexOutOfBoundsException e) {
-				System.out.println("StringIndexOutOfBoundsException waz here");
-				prevPoint = null;
-			} catch (MathSyntaxException e) {
-				System.out.println("MathSyntaxException waz here");
-				prevPoint = null;
+		for (int i=0; i<functions.size(); i++) {
+			double j = 0.0;
+			Point prevPoint = null;
+			for (double i1 = xmin; i1 < xmax; i1 += delta) {
+				try {
+					j = Double.parseDouble(MathParser.parse(functions.get(i).replace(
+							"x", Double.toString(i1))));
+				} catch (NumberFormatException e) {
+					//System.out.println("NumberFormatException waz here");
+					e.printStackTrace();
+					prevPoint = null;
+				} catch (StringIndexOutOfBoundsException e) {
+					System.out
+							.println("StringIndexOutOfBoundsException waz here");
+					prevPoint = null;
+				} catch (MathSyntaxException e) {
+					System.out.println("MathSyntaxException waz here");
+					prevPoint = null;
+				}
+				Point p = new Point(
+						(int) Math.round(map(xmin, xmax, 0, sx, i1)), sy
+								- (int) Math.round(map(ymin, ymax, 0, sy, j)));
+
+				if (prevPoint != null)
+					g.drawLine(prevPoint.x, prevPoint.y, p.x, p.y);
+				else
+					g.drawLine(p.x, p.y, p.x, p.y);
+				prevPoint = new Point(p.x, p.y);
+				System.out.println(j);
 			}
-			
-			Point p = new Point((int) Math.round(map(xmin, xmax, 0, sx, i)), sy - (int) Math.round(map(ymin, ymax, 0, sy, j)));
-			
-			if(prevPoint != null)
-				g.drawLine(prevPoint.x, prevPoint.y, p.x, p.y);
-			else g.drawLine(p.x, p.y, p.x, p.y);
-			prevPoint = new Point(p.x, p.y);
-			//System.out.println(j);
+		}
+		for(double i=xmin; i<xmax; i++) {
+			int xloc = (int) map(xmin, xmax, 0, sx, i);
+			int yloc = (int) map(ymin, ymax, 0, sy, 0);
+			g.drawLine(xloc, yloc-3, xloc, yloc+3);
+		}
+		for(double i=ymin; i<ymax; i++) {
+			//g.setColor(Color.red);
+			int xloc = (int) map(xmin, xmax, 0, sx, 0);
+			int yloc = (int) map(ymin, ymax, 0, sy, i);
+			g.drawLine(xloc-3, yloc, xloc+3, yloc);
 		}
 	}
 	
@@ -72,7 +101,7 @@ public class Grapher extends JPanel {
 	
 	public static void main(String args[]) {
 		JFrame frame = new JFrame("Graphing Test");
-		frame.setSize(825, 875);
+		frame.setSize(960, 875);
 		frame.setLayout(new BorderLayout());
 		final Grapher grapher = new Grapher("x");
 		frame.add(grapher, BorderLayout.CENTER);
@@ -93,11 +122,18 @@ public class Grapher extends JPanel {
 		final JTextField ymaxBox = new JTextField(4);
 		ymaxBox.setText(Double.toString(grapher.ymax));
 		controlPanel.add(ymaxBox);
-		controlPanel.add(new JLabel("   "));
-		controlPanel.add(new JLabel("y ="));
-		final JTextField fBox = new JTextField(6);
-		fBox.setText(grapher.getFunction());
-		controlPanel.add(fBox);
+		controlPanel.add(new JLabel("Delta:"));
+		final JTextField dBox = new JTextField(4);
+		dBox.setText(Double.toString(grapher.delta));
+		controlPanel.add(dBox);
+		JPanel fPanel = new JPanel();
+		fPanel.setLayout(new GridLayout(grapher.f, 2));
+		final JTextField[] fFields = new JTextField[grapher.f];
+		for(int i=0; i<grapher.f; i++) {
+			fPanel.add(new JLabel("y" + (i+1)+ " ="));
+			fFields[i] = new JTextField(8);
+			fPanel.add(fFields[i]);
+		}
 		JButton gButton = new JButton("Graph!");
 		gButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -105,10 +141,17 @@ public class Grapher extends JPanel {
 				grapher.xmax = Double.parseDouble(xmaxBox.getText());
 				grapher.ymin = Double.parseDouble(yminBox.getText());
 				grapher.ymax = Double.parseDouble(ymaxBox.getText());
-				grapher.setFunction(fBox.getText());
+				grapher.delta = Double.parseDouble(dBox.getText());
+				//grapher.setFunction(fBox.getText());
+				grapher.clearFunctions();
+				for(int i=0; i<grapher.f; i++) {
+					grapher.addFunction(fFields[i].getText());
+				}
+				grapher.repaint();
 			}
 		});
 		controlPanel.add(gButton);
+		frame.add(fPanel, BorderLayout.EAST);
 		frame.add(controlPanel, BorderLayout.SOUTH);
 		frame.setVisible(true);
 		frame.setLocationRelativeTo(null);
