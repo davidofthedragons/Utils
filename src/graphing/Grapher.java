@@ -18,6 +18,7 @@ public class Grapher extends JPanel {
 	private int sx = 800, sy = 800;
 	private double xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0;
 	private double delta = .1;
+	private Point mousePoint = new Point();
 	
 	
 	public Grapher(String function) {
@@ -25,7 +26,21 @@ public class Grapher extends JPanel {
 		this.addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				
+				/*xmin += map(-sx, sx, xmin, xmax, e.getPoint().x-mousePoint.x);
+				ymin += map(-sy, sy, ymin, ymax, e.getPoint().y-mousePoint.y);
+				xmax += map(-sx, sx, xmin, xmax, e.getPoint().x-mousePoint.x);
+				ymax += map(-sy, sy, ymin, ymax, e.getPoint().y-mousePoint.y);*/
+				//System.out.println(e.getPoint().toString());
+				//System.out.println(mousePoint.toString());
+				xmin += (e.getPoint().x-mousePoint.x) * .025;
+				xmax += (e.getPoint().x-mousePoint.x) * .025;
+				ymin += (e.getPoint().y-mousePoint.y) * .025;
+				ymax += (e.getPoint().y-mousePoint.y) * .025;
+				//System.out.println("dx=" + (e.getPoint().x-mousePoint.x));
+				//System.out.println("dy=" + (e.getPoint().y-mousePoint.y));
+				mousePoint = e.getPoint();
+				repaint();
+				//System.out.println("x: (" + xmin + ", " + xmax + ") y: (" + ymin + ", " + ymax + ")" );
 			}
 			@Override
 			public void mouseMoved(MouseEvent e) {}
@@ -34,8 +49,41 @@ public class Grapher extends JPanel {
 		this.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
-				
+				if(e.getWheelRotation()<0) {
+					xmin *= .9;
+					xmax *= .9;
+					ymin *= .9;
+					ymax *= .9;
+				}
+				else {
+					xmin *= (1/.9);
+					xmax *= (1/.9);
+					ymin *= (1/.9);
+					ymax *= (1/.9);
+				}
+				repaint();
+				//System.out.println("x: (" + xmin + ", " + xmax + ") y: (" + ymin + ", " + ymax + ")" );
 			}
+		});
+		this.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+
+			@Override
+			public void mouseExited(MouseEvent e) {}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				mousePoint = e.getPoint();
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+			
 		});
 	}
 	
@@ -49,7 +97,7 @@ public class Grapher extends JPanel {
 		super.paint(g);
 		g.setColor(Color.black);
 		g.drawLine(0, sy - (int) map(ymin, ymax, 0, sy, 0), sx, sy - (int) map(ymin, ymax, 0, sy, 0));
-		g.drawLine((int) map(xmin, xmax, 0, sx, 0), 0, (int) map(xmin, xmax, 0, sx, 0), sy);
+		g.drawLine(sx -(int) map(xmin, xmax, 0, sx, 0), 0, sx- (int) map(xmin, xmax, 0, sx, 0), sy);
 		for (int i=0; i<functions.size(); i++) {
 			double j = 0.0;
 			Point prevPoint = null;
@@ -59,14 +107,13 @@ public class Grapher extends JPanel {
 							"x", Double.toString(i1))));
 				} catch (NumberFormatException e) {
 					//System.out.println("NumberFormatException waz here");
-					e.printStackTrace();
+					//e.printStackTrace();
 					prevPoint = null;
 				} catch (StringIndexOutOfBoundsException e) {
-					System.out
-							.println("StringIndexOutOfBoundsException waz here");
+					//System.out.println("StringIndexOutOfBoundsException waz here");
 					prevPoint = null;
 				} catch (MathSyntaxException e) {
-					System.out.println("MathSyntaxException waz here");
+					//System.out.println("MathSyntaxException waz here");
 					prevPoint = null;
 				}
 				Point p = new Point(
@@ -78,7 +125,7 @@ public class Grapher extends JPanel {
 				else
 					g.drawLine(p.x, p.y, p.x, p.y);
 				prevPoint = new Point(p.x, p.y);
-				System.out.println(j);
+				//System.out.println(j);
 			}
 		}
 		for(double i=xmin; i<xmax; i++) {
@@ -90,7 +137,7 @@ public class Grapher extends JPanel {
 			//g.setColor(Color.red);
 			int xloc = (int) map(xmin, xmax, 0, sx, 0);
 			int yloc = (int) map(ymin, ymax, 0, sy, i);
-			g.drawLine(xloc-3, yloc, xloc+3, yloc);
+			g.drawLine(xloc-3, yloc, xloc+3,yloc);
 		}
 	}
 	

@@ -171,7 +171,7 @@ public class MathParser {
 		//System.out.println("Exiting parse();");
 		String assembly = "";
 		for(int i=0; i<tokens.size(); i++) assembly = assembly + tokens.get(i);
-		System.out.println(assembly);
+		//System.out.println(assembly);
 		return assembly;
 	}
 	
