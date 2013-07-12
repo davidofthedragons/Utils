@@ -15,4 +15,8 @@ public final class Utils {
 		}
 		return -1;
 	}
+	
+	public static double round(double d, double roundto) {
+		return Math.round(d/roundto)*roundto;
+	}
 }

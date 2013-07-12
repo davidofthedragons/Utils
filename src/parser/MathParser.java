@@ -5,10 +5,13 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+import utils.Utils;
+
 public class MathParser {
 
 	static final String deliminatiors = "+-/*^()[]| ";
 	static final String operators = "+-*/^";
+	static final String alpha = "abcdefghijklmnopqrstuvwxyz";
 	//StringTokenizer tokenizer;
 	
 	
@@ -48,7 +51,14 @@ public class MathParser {
 				//System.out.println("Found corresponding close parenthesis at " + endP);
 				String s = parse(exp.substring(startP+1, endP));
 				if (i>0) {
-					if (!operators.contains(Character.toString(exp.charAt(i - 1)))) { //  5(8) --> 5*(8)
+					if(alpha.contains(Character.toString(exp.charAt(i-1)))) {
+						int j;
+						for(j=i-1; j>0 && alpha.contains(Character.toString(exp.charAt(j))); j--);
+						System.out.println("s " + s);
+						s = doFunc(exp.substring(j, i), s);
+						startP = j;
+					}
+					else if (!operators.contains(Character.toString(exp.charAt(i - 1)))) { //  5(8) --> 5*(8)
 						exp = exp.substring(0, startP) + "*" + exp.substring(startP);
 						startP++;
 						endP++;
@@ -209,6 +219,21 @@ public class MathParser {
 			}
 		}
 		return -1;
+	}
+	
+	private static String doFunc(String fName, String arg) throws MathSyntaxException {
+		System.out.println("Function:" + fName + "(" + arg + ")");
+		if(fName.equalsIgnoreCase("sin")) {
+			return Double.toString(Utils.round(Math.sin(Math.toRadians(Double.parseDouble(arg))), .00001));
+		} else if(fName.equalsIgnoreCase("cos")) {
+			return Double.toString(Utils.round(Math.cos(Math.toRadians(Double.parseDouble(arg))), .00001));
+		} else if(fName.equalsIgnoreCase("tan")) {
+			return Double.toString(Utils.round(Math.tan(Math.toRadians(Double.parseDouble(arg))), .00001));
+		} else if(fName.equalsIgnoreCase("sqrt")) {
+			return Double.toString(Utils.round(Math.cos(Double.parseDouble(arg)), .00001));
+		}
+		
+		else throw new MathSyntaxException();
 	}
 	
 	
