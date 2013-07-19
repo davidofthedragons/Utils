@@ -1,4 +1,4 @@
-package parser;
+package math.parser;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;

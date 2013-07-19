@@ -1,4 +1,4 @@
-package graphing;
+package math.graphing;
 
 import javax.swing.JFrame;
 

@@ -1,4 +1,4 @@
-package graphing;
+package math.graphing;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
-import parser.MathParser;
-import parser.MathParser.MathSyntaxException;
+import math.parser.MathParser;
+import math.parser.MathParser.MathSyntaxException;
 
 public class Grapher extends JPanel {
 	

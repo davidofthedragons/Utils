@@ -1,4 +1,4 @@
-package graphing;
+package math.graphing;
 
 public class DataSet {
 
